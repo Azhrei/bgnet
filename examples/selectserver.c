@@ -1,5 +1,19 @@
 /*
 ** selectserver.c -- a cheezy multiperson chat server
+**
+** select() can monitor only file descriptors numbers that are less than
+** FD_SETSIZE; poll(2) does not have this limitation.  See the man pages
+** for each.
+**
+** On Linux, select() modifies 'timeout' to reflect the amount of time
+** not slept; most other implementations do not do this.  (POSIX.1
+** permits either behavior.)  Consider it to be undefined when writing
+** portable code.
+**
+** Under Linux, select() may report a socket file descriptor as "ready
+** for reading", while nevertheless a subsequent read blocks.  This
+** could for example happen when data has arrived, but upon examination
+** has the wrong checksum and is discarded (thus causing a blocking read).
 */
 
 #include <stdio.h>
@@ -43,16 +57,17 @@ int main(void)
     int yes=1;        // for setsockopt() SO_REUSEADDR, below
     int i, j, rv;
 
-	struct addrinfo hints, *ai, *p;
+	struct addrinfo hints = {
+            .ai_family = AF_UNSPEC,
+            .ai_socktype = SOCK_STREAM,
+            .ai_flags = AI_PASSIVE,
+        };
+	struct addrinfo *ai, *p;
 
     FD_ZERO(&master);    // clear the master and temp sets
     FD_ZERO(&read_fds);
 
 	// get us a socket and bind it
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
 	if ((rv = getaddrinfo(NULL, PORT, &hints, &ai)) != 0) {
 		fprintf(stderr, "selectserver: %s\n", gai_strerror(rv));
 		exit(1);
@@ -97,15 +112,17 @@ int main(void)
 
     // main loop
     for(;;) {
+        int numfds;
         read_fds = master; // copy it
-        if (select(fdmax+1, &read_fds, NULL, NULL, NULL) == -1) {
+        if ((numfds = select(fdmax+1, &read_fds, NULL, NULL, NULL)) == -1) {
             perror("select");
             exit(4);
         }
 
         // run through the existing connections looking for data to read
-        for(i = 0; i <= fdmax; i++) {
+        for(i = 0; numfds > 0 && i <= fdmax; i++) {
             if (FD_ISSET(i, &read_fds)) { // we got one!!
+                numfds--;
                 if (i == listener) {
                     // handle new connections
                     addrlen = sizeof remoteaddr;
@@ -160,4 +177,3 @@ int main(void)
     
     return 0;
 }
-

@@ -28,5 +28,5 @@ int main(int argc, char *argv[])
 	printf("Host name  : %s\n", h->h_name);
 	printf("IP Address : %s\n", inet_ntoa(*((struct in_addr *)h->h_addr)));
    
-   return 0;
+       return 0;
 }

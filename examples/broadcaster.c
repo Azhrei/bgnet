@@ -19,7 +19,10 @@
 int main(int argc, char *argv[])
 {
 	int sockfd;
-	struct sockaddr_in their_addr; // connector's address information
+	struct sockaddr_in their_addr = {
+            .sin_family = AF_INET,	   // host byte order
+            .sin_port = htons(SERVERPORT), // short, network byte order
+        }; // connector's address information
 	struct hostent *he;
 	int numbytes;
 	int broadcast = 1;
@@ -50,7 +53,6 @@ int main(int argc, char *argv[])
 	their_addr.sin_family = AF_INET;	 // host byte order
 	their_addr.sin_port = htons(SERVERPORT); // short, network byte order
 	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
-	memset(their_addr.sin_zero, '\0', sizeof their_addr.sin_zero);
 
 	if ((numbytes=sendto(sockfd, argv[2], strlen(argv[2]), 0,
 			 (struct sockaddr *)&their_addr, sizeof their_addr)) == -1) {

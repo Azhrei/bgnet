@@ -19,14 +19,13 @@
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
-void sigchld_handler(int s)
+void sigchld_handler(int /* s */)
 {
-	(void)s; // quiet unused variable warning
-
 	// waitpid() might overwrite errno, so we save and restore it:
 	int saved_errno = errno;
 
-	while(waitpid(-1, NULL, WNOHANG) > 0);
+	while(waitpid(-1, NULL, WNOHANG) > 0)
+        ;
 
 	errno = saved_errno;
 }
@@ -45,18 +44,22 @@ void *get_in_addr(struct sockaddr *sa)
 int main(void)
 {
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
-	struct addrinfo hints, *servinfo, *p;
+	struct addrinfo hints = {
+        .ai_family = AF_UNSPEC,
+        .ai_socktype = SOCK_STREAM,
+        .ai_flags = AI_PASSIVE, // use my IP
+    };
+	struct addrinfo *servinfo, *p;
 	struct sockaddr_storage their_addr; // connector's address information
 	socklen_t sin_size;
-	struct sigaction sa;
+	struct sigaction sa = {
+        .sa_handler = sigchld_handler, // reap all dead processes
+        .sa_mask = 0, // same as 'sigemptyset(&sa_mask)'
+        .sa_flags = SA_RESTART,
+    };
 	int yes=1;
 	char s[INET6_ADDRSTRLEN];
 	int rv;
-
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE; // use my IP
 
 	if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
@@ -64,6 +67,7 @@ int main(void)
 	}
 
 	// loop through all the results and bind to the first we can
+    // (Could use INADDR_ANY and bind to all of them!)
 	for(p = servinfo; p != NULL; p = p->ai_next) {
 		if ((sockfd = socket(p->ai_family, p->ai_socktype,
 				p->ai_protocol)) == -1) {
@@ -98,9 +102,6 @@ int main(void)
 		exit(1);
 	}
 
-	sa.sa_handler = sigchld_handler; // reap all dead processes
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART;
 	if (sigaction(SIGCHLD, &sa, NULL) == -1) {
 		perror("sigaction");
 		exit(1);
@@ -133,4 +134,3 @@ int main(void)
 
 	return 0;
 }
-

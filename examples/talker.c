@@ -18,7 +18,11 @@
 int main(int argc, char *argv[])
 {
 	int sockfd;
-	struct addrinfo hints, *servinfo, *p;
+	struct addrinfo hints = {
+        .ai_family = AF_UNSPEC,
+        .ai_socktype = SOCK_DGRAM,
+    };
+	struct addrinfo *servinfo, *p;
 	int rv;
 	int numbytes;
 
@@ -26,10 +30,6 @@ int main(int argc, char *argv[])
 		fprintf(stderr,"usage: talker hostname message\n");
 		exit(1);
 	}
-
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_DGRAM;
 
 	if ((rv = getaddrinfo(argv[1], SERVERPORT, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
