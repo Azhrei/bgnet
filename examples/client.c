@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
 	int sockfd, numbytes;  
 	char buf[MAXDATASIZE];
 	struct addrinfo hints = {
-            .si_family = AF_UNSPEC,
-            .si_socktype = SOCK_STREAM,
+            .ai_family = AF_UNSPEC,
+            .ai_socktype = SOCK_STREAM,
         };
 	struct addrinfo *servinfo, *p;
 	int rv;

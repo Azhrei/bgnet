@@ -489,7 +489,7 @@ int main(void)
 	unpack(buf, "CHhl96sd", &magic, &ps2, &monkeycount, &altitude, s2,
 		&absurdityfactor);
 
-	printf("'%c' %hhu %u %ld \"%s\" %f\n", magic, ps2, monkeycount,
+	printf("'%c' %u %u %ld \"%s\" %f\n", magic, ps2, monkeycount,
 			altitude, s2, absurdityfactor);
 
 #else

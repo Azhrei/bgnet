@@ -13,9 +13,9 @@
 int main(int argc, char *argv[])
 {
 	struct addrinfo hints = {
-        .ai_family = AF_UNSPEC, // AF_INET or AF_INET6 to force version
-        .ai_socktype = SOCK_STREAM,
-    };
+	    .ai_family = AF_UNSPEC, // AF_INET or AF_INET6 to force version
+	    .ai_socktype = SOCK_STREAM,
+	};
 	struct addrinfo *res, *p;
 	int status;
 	char ipstr[INET6_ADDRSTRLEN];

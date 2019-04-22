@@ -19,8 +19,10 @@
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
-void sigchld_handler(int /* s */)
+void sigchld_handler(int s)
 {
+	(void)s;
+
 	// waitpid() might overwrite errno, so we save and restore it:
 	int saved_errno = errno;
 
@@ -45,10 +47,10 @@ int main(void)
 {
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints = {
-        .ai_family = AF_UNSPEC,
-        .ai_socktype = SOCK_STREAM,
-        .ai_flags = AI_PASSIVE, // use my IP
-    };
+	    .ai_family = AF_UNSPEC,
+	    .ai_socktype = SOCK_STREAM,
+	    .ai_flags = AI_PASSIVE, // use my IP
+	};
 	struct addrinfo *servinfo, *p;
 	struct sockaddr_storage their_addr; // connector's address information
 	socklen_t sin_size;

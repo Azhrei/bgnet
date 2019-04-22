@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
 {
 	int sockfd;
 	struct addrinfo hints = {
-        .ai_family = AF_UNSPEC,
-        .ai_socktype = SOCK_DGRAM,
-    };
+	    .ai_family = AF_UNSPEC,
+	    .ai_socktype = SOCK_DGRAM,
+	};
 	struct addrinfo *servinfo, *p;
 	int rv;
 	int numbytes;

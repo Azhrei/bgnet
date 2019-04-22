@@ -306,7 +306,7 @@ composed of 100% Free and Open Source Software.</p></comment>
 too difficult to figure out from the <com>man</com> pages?  You want to
 do cool Internet programming, but you don't have time to wade through a
 gob of <type>struct</type>s trying to figure out if you have to call
-<func>bind()</func> before you <func>connect()</func>, etc., etc.</p>
+<func>bind()</func> before you <func>connect()</func>, etc.</p>
 
 <p>Well, guess what!  I've already done this nasty business, and I'm
 dying to share the information with everyone!  You've come to the right
@@ -658,7 +658,9 @@ are <ii key="socket;types"/>DARPA Internet addresses (Internet
 Sockets), path names on a local node (Unix Sockets), CCITT X.25
 addresses (X.25 Sockets that you can safely ignore), and probably many
 others depending on which Unix flavor you run.  This document deals only
-with the first: Internet Sockets.</p>
+with the first: Internet Sockets (but note that Unix Sockets are not
+much different, and once you have Internet Sockets down, you'll be
+good with the second variety, as well).</p>
 
 <!-- ======================================================= -->
 <!-- Two Types of Internet Sockets -->
@@ -674,7 +676,7 @@ this sentence, where I'm going to tell you that "<ii key="raw
 sockets"/><ii key="socket;raw"/>Raw Sockets" are also very powerful and
 you should look them up.</p>
 
-<p>All right, already.  What are the two types?  One is "<ii
+<p>Alright, already.  What are the two types?  One is "<ii
 key="socket;stream"/>Stream Sockets"; the other is
 "<ii key="socket;datagram"/>Datagram Sockets", which
 may hereafter be referred to as "<const>SOCK_STREAM</const>" and
@@ -746,7 +748,7 @@ applications.</p>
 
 <p>For unreliable applications like games, audio, or video, you just
 ignore the dropped packets, or perhaps try to cleverly compensate for
-them.  (Quake players will know the manifestation this effect by the
+them.  (Quake players will know the manifestation of this effect by the
 technical term: <emp>accursed lag</emp>.  The word "accursed", in this
 case, represents any extremely profane utterance.)</p>
 
@@ -795,14 +797,15 @@ then again by the final protocol on the hardware (physical) layer (say,
 Ethernet header, the kernel strips the IP and UDP headers, the TFTP
 program strips the TFTP header, and it finally has the data.</p>
 
-<p>Now I can finally talk about the infamous <ii key="layered network
+<p>Now, I can finally talk about the infamous <ii key="layered network
 model"/><emp>Layered Network Model</emp> (aka "ISO/OSI").  This Network
 Model describes a system of network functionality that has many
 advantages over other models.  For instance, you can write sockets
 programs that are exactly the same without caring how the data is
-physically transmitted (serial, thin Ethernet, AUI, whatever) because
-programs on lower levels deal with it for you.  The actual network
-hardware and topology is transparent to the socket programmer.</p>
+physically transmitted (serial, thin Ethernet, AUI, two tin cans
+and a piece of string, whatever) because programs on lower levels
+deal with it for you.  The actual network hardware and topology is
+transparent to the socket programmer.</p>
 
 <p>Without any further ado, I'll present the layers of the full-blown
 model.  Remember this for network class exams:</p>
@@ -850,8 +853,8 @@ tell you everything I wanted to say about routing: nothing!  That's
 right, I'm not going to talk about it at all.  The router strips the
 packet to the IP header, consults its routing table, <ii
 key="blah blah blah"/>blah blah blah.  Check out the <ulink
-url="&rfcpre;791&rfcpost;">IP RFC</ulink> if you really really care.  If
-you never learn about it, well, you'll live.</p>
+url="&rfcpre;791&rfcpost;">IP RFC</ulink> if you really, really care.  If
+you never learn about it... well, you'll live.</p>
 
 </sect2>
 
@@ -866,7 +869,7 @@ you never learn about it, well, you'll live.</p>
 <p>Here's the part of the game where we get to talk code for a
 change.</p>
 
-<p>But first, let's discuss more non-code!  Yay!  First I want to talk
+<p>But first, let's discuss more non-code!  Yay!  First, I want to talk
 about <ii key="IP"/>IP addresses and ports for just a tad so we have
 that sorted out.  Then we'll talk about how the sockets API stores and
 manipulates IP addresses and other data.</p>
@@ -877,7 +880,8 @@ manipulates IP addresses and other data.</p>
 <p>In the good old days back when Ben Kenobi was still called Obi Wan
 Kenobi, there was a wonderful network routing system called The Internet
 Protocol Version 4, also called <ii key="IPv4"/>IPv4.  It had addresses
-made up of four bytes (A.K.A. four "octets"), and was commonly written
+made up of four bytes (really four "octets", since bytes can be different
+sizes on different hardware), and was commonly written
 in "dots and numbers" form, like so: <tt>192.0.2.111</tt>.</p>
 
 <p>You've probably seen it around.</p>
@@ -939,7 +943,8 @@ Universe</emp>.</p>
 
 <p>Forget this dots-and-numbers look of IPv4, too; now we've got a
 hexadecimal representation, with each two-byte chunk separated by a
-colon, like this: <tt>2001:0db8:c9d2:aee5:73e3:934a:a5ae:9551</tt>.</p>
+colon, like this: <tt>2001:0db8:c9d2:aee5:73e3:934a:a5ae:9551</tt> (but
+only once in a given address!).</p>
 
 <p>That's not all!  Lots of times, you'll have an IP address with lots
 of zeros in it, and you can compress them between two colons.  And you
@@ -1022,7 +1027,9 @@ followed by a bunch of 0-bits.)</p>
 intuitive idea of how many bits that is, and secondly, it's really not
 compact.  So the New Style came along, and it's much nicer.  You just
 put a slash after the IP address, and then follow that by the number of
-network bits in decimal.  Like this: <tt>192.0.2.12/30</tt>.</p>
+network bits in decimal.  Like this: <tt>192.0.2.12/30</tt>.  (This is
+called "CIDR", for Classless Internet Domain Routing.  But that's
+intuitively obvious, isn't it?)</p>
 
 <p>Or, for IPv6, something like this: <tt>2001:db8::/32</tt> or
 <tt>2001:db8:5413:4028::9db9/64</tt>.</p>
@@ -1653,13 +1660,12 @@ listening or network setup; it merely sets up structures we'll use
 later:</p>
 
 <code><![CDATA[int status;
-struct addrinfo hints;
+struct addrinfo hints = {
+	.ai_family = AF_UNSPEC,     // don't care IPv4 or IPv6
+	.ai_socktype = SOCK_STREAM, // TCP stream sockets
+	.ai_flags = AI_PASSIVE,     // fill in my IP for me
+};
 struct addrinfo *servinfo;  // will point to the results
-
-memset(&hints, 0, sizeof hints); // make sure the struct is empty
-hints.ai_family = AF_UNSPEC;     // don't care IPv4 or IPv6
-hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
 
 if ((status = getaddrinfo(NULL, "3490", &hints, &servinfo)) != 0) {
 	fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
@@ -1700,12 +1706,11 @@ particular server, say "www.example.net" port 3490.  Again, this doesn't
 actually connect, but it sets up the structures we'll use later:</p>
 
 <code><![CDATA[int status;
-struct addrinfo hints;
+struct addrinfo hints = {
+	.ai_family = AF_UNSPEC,     // don't care IPv4 or IPv6
+	.ai_socktype = SOCK_STREAM, // TCP stream sockets
+};
 struct addrinfo *servinfo;  // will point to the results
-
-memset(&hints, 0, sizeof hints); // make sure the struct is empty
-hints.ai_family = AF_UNSPEC;     // don't care IPv4 or IPv6
-hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
 
 // get ready to connect
 status = getaddrinfo("www.example.net", "3490", &hints, &servinfo);
@@ -1734,7 +1739,11 @@ specify on the command line:</p>
 
 int main(int argc, char *argv[])
 {
-	struct addrinfo hints, *res, *p;
+	struct addrinfo *res, *p;
+	struct addrinfo hints = {
+	    .ai_family = AF_UNSPEC, // AF_INET or AF_INET6 to force version
+	    .ai_socktype = SOCK_STREAM,
+	};
 	int status;
 	char ipstr[INET6_ADDRSTRLEN];
 
@@ -1742,10 +1751,6 @@ int main(int argc, char *argv[])
 	    fprintf(stderr,"usage: showip hostname\n");
 	    return 1;
 	}
-
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6 to force version
-	hints.ai_socktype = SOCK_STREAM;
 
 	if ((status = getaddrinfo(argv[1], NULL, &hints, &res)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
@@ -1921,15 +1926,14 @@ address, namely, port and <ii key="IP"/>IP address.
 example that binds the socket to the host the program is running on,
 port 3490:</p>
 
-<code><![CDATA[struct addrinfo hints, *res;
-int sockfd;
-
+<code><![CDATA[struct addrinfo *res;
 // first, load up address structs with getaddrinfo():
-
-memset(&hints, 0, sizeof hints);
-hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
-hints.ai_socktype = SOCK_STREAM;
-hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
+struct addrinfo hints = {
+    .ai_family = AF_UNSPEC,  // use IPv4 or IPv6, whichever
+    .ai_socktype = SOCK_STREAM,
+    .ai_flags = AI_PASSIVE,     // fill in my IP for me
+};
+int sockfd;
 
 getaddrinfo(NULL, "3490", &hints, &res);
 
